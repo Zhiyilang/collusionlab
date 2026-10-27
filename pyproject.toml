@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "collusionlab"
+version = "0.1.0"
+description = "A repeated pricing market for studying AI-agent collusion (AI Collusion Research Sprint, Track 1)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []
+
+[project.scripts]
+collusionlab = "collusionlab.__main__:main"
+
+[tool.setuptools]
+packages = ["collusionlab"]

@@ -1,0 +1,41 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run the assertion suite
+        run: python eval.py
+      - name: Restriction sweep must run
+        run: python -m collusionlab sweep --seeds 2 --rounds 20
+      - name: Auditor calibration must run
+        run: python -m collusionlab detect --seeds 2
+      - name: A run must produce receipts
+        run: python -m collusionlab ledger --rounds 5 --out run.jsonl
+
+  # Chinese Windows defaults to cp936 and a single unencodable character
+  # turns a clean run into a traceback. Verify we survive it.
+  hostile-locale:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Run under LC_ALL=C with PYTHONUTF8 unset
+        run: env -u PYTHONUTF8 LC_ALL=C python eval.py
+      - name: CLI output must also be ASCII safe
+        run: env -u PYTHONUTF8 LC_ALL=C python -m collusionlab sweep --seeds 1 --rounds 10
